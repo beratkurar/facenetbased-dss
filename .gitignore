@@ -1,0 +1,15 @@
+/runs
+/logs
+/closestPairs
+/closestPairs2
+/closestPairsBin
+/closestPairsNew
+/farthestPairs
+/farthestPairsBin
+/plots
+/Model_training_checkpoints
+__pycache__/
+*.py[cod]
+.idea/
+*.bin
+*.npy
