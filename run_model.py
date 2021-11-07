@@ -1,18 +1,9 @@
 import numpy as np
-import argparse
 import os
 import torch
 import torch.nn as nn
-import torch.optim as optim
 from heapq import  nsmallest
 import torchvision.transforms as transforms
-from torch.nn.modules.distance import PairwiseDistance
-from dataloaders.LFWDataset import LFWDataset
-from losses.triplet_loss import TripletLoss
-from dataloaders.triplet_loss_dataloader import  TripletFragmentsDataset, TripletFragmentsDatasetBinary
-from dataloaders.regularLoader import   LettersDataset, FragmentsDataset, FragmentsDatasetBinary
-from validate_on_LFW import evaluate_lfw
-from plot import plot_roc_lfw, plot_accuracy_lfw, plot_triplet_losses
 from tqdm import tqdm
 from models.resnet import Resnet18Triplet
 from models.resnet import Resnet34Triplet
@@ -20,17 +11,12 @@ from models.resnet import Resnet50Triplet
 from models.resnet import Resnet101Triplet
 from models.resnet import Resnet152Triplet
 from models.inceptionresnetv2 import InceptionResnetV2Triplet
-from visualizeEmbeddings import visualizeEmbeddings
-from dataloaders.triplet_loss_dataloader import  TripletFragmentsDataset, TripletFragmentsDatasetBinary, TripletFragmentsDatasetBinaryLetters
-from dataloaders.regularLoader import   LettersDataset, FragmentsDataset, FragmentsDatasetBinary, FragmentsDatasetBinaryLetters
-
+from dataloaders.regularLoader import  FragmentsDataset, FragmentsDatasetBinaryLetters
 from torch.utils.tensorboard import SummaryWriter
-import datetime
 
 
-name ='bin_patches'
+name ='test'
 writer = SummaryWriter('runs/traint_triplet/{}'.format(name))#datetime.datetime.now()))
-
 
 
 
@@ -304,7 +290,6 @@ def main():
             num_workers=0,
             shuffle=False
         )
-
 
 
     calcAccuracy(model, test_dataloader)
