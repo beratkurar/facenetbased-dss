@@ -231,11 +231,12 @@ def calcAccuracy(model, test_dataloader, idxWriter=0):
     features=[]
     progress_bar = enumerate(tqdm(test_dataloader))
     with torch.no_grad():
+        #for batch_index, (data,  label) in progress_bar:
         for batch_index, (data, raw_image, label) in progress_bar:
             data = data.cuda()
             output = model(data, None)
 
-            class_labels += label
+            class_labels += list(label)# list(label.numpy()) #label
             features += output.data.cpu().numpy().tolist()
 
 
@@ -323,17 +324,17 @@ def calcAccuracy(model, test_dataloader, idxWriter=0):
         idx = 1
         found = False
         otherManu = class_labels[i].split(":")[0]
-        otherPath = class_labels[i].split(":")[1]
+        #otherPath = class_labels[i].split(":")[1]
         for v,l in closestVals:
             lManu = l.split(":")[0]
-            lPath = l.split(":")[1]
+            #lPath = l.split(":")[1]
 
-            minDist = min(getNumberOfLetters(lPath), getNumberOfLetters((otherPath)))
-            if minDist != -1:
-                if lManu == otherManu:
-                    mindistPos.append(minDist)
-                else:
-                    mindistNeg.append(minDist)
+            # minDist = min(getNumberOfLetters(lPath), getNumberOfLetters((otherPath)))
+            # if minDist != -1:
+            #     if lManu == otherManu:
+            #         mindistPos.append(minDist)
+            #     else:
+            #         mindistNeg.append(minDist)
 
             if lManu == otherManu and not found:
                 truePoss[idx-1]+=1
@@ -347,23 +348,12 @@ def calcAccuracy(model, test_dataloader, idxWriter=0):
     print("final accuracy: {}".format(truePoss[0]/len(features) ))
     print("final Mean reciprocal rank: {}".format(sum(invRanks) / len(features)))
 
-    meanLetterNumbersPos = np.array(mindistPos).mean()
-    meanLetterNumbersNeg = np.array(mindistNeg).mean()
-    medianLetterNumbersPos = np.median( np.array(mindistPos))
-    medianLetterNumbersNeg = np.median(np.array(mindistNeg))
-    print(" mean letter number in positive samples from 10 closest {}".format(meanLetterNumbersPos))
-    print(" mean letter number in negative samples from 10 closest {}".format(meanLetterNumbersNeg))
 
     writer.add_scalar('Train/MRR', sum(invRanks) / len(features), idxWriter)
     writer.add_scalar('Train/Accuracy', truePoss[0] / len(features), idxWriter)
     writer.add_scalar('Train/auc', lr_auc, idxWriter)
     writer.add_scalar('Train/AccuracyTop5', sum(truePoss[0:5]) / len(features), idxWriter)
     writer.add_scalar('Train/AccuracyTop10', sum(truePoss[0:10]) / len(features), idxWriter)
-    #writer.add_scalar('Train/meanLetterNumbersPos', meanLetterNumbersPos, idxWriter)
-    #writer.add_scalar('Train/meanLetterNumbersNeg', meanLetterNumbersNeg, idxWriter)
-    #writer.add_scalar('Train/medianLetterNumbersPos', medianLetterNumbersPos, idxWriter)
-    #writer.add_scalar('Train/medianLetterNumbersNeg', medianLetterNumbersNeg, idxWriter)
-    model.train()
 
 
 
@@ -542,7 +532,7 @@ def main():
     knownVectors = calculateVectors(known_dataloader, model)
     unknownVrctors = calculateVectors(unknown_dataloader, model, known=False)
     calculateDistances(knownVectors, unknownVrctors)
-    #calcAccuracy(model, test_dataloader)
+    calcAccuracy(model, test_dataloader)
 
 
 

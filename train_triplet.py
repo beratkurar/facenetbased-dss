@@ -26,7 +26,7 @@ from torch.utils.tensorboard import SummaryWriter
 import datetime
 from  dataloaders.triplet_mnist_dataloader import TripletEmnistDataset
 
-RUN_ON_LETTERS = True
+RUN_ON_LETTERS = False
 
 
 name ='BinaryLettersAlefCleanSmallRes'
@@ -64,11 +64,11 @@ parser.add_argument('--training_triplets_path', default=None, type=str,
 parser.add_argument('--num_triplets_train', default=500000, type=int,
                     help="Number of triplets for training (default: 1100000)"
                     )
-parser.add_argument('--resume_path', default =  '/home/olya/Documents/facenetbased-dss/Model_training_checkpoints/model_resnet34BinaryLettersAlefCleanSmallRes_triplet_allepoch_1.pt', # 'Model_training_checkpoints/model_resnet34_triplet_allepoch_1.pt',
+parser.add_argument('--resume_path', default =  '/home/olya/Documents/facenetbased-dss/Model_training_checkpoints/model_resnet34_triplet_allepoch_1.pt',#model_resnet34BinaryLettersAlefCleanSmallRes_triplet_allepoch_1.pt', # 'Model_training_checkpoints/model_resnet34_triplet_allepoch_1.pt',
                     type=str,
     help='path to latest model checkpoint: (Model_training_checkpoints/model_resnet34_epoch_0.pt file) (default: None)'
                     )
-parser.add_argument('--batch_size', default=16, type=int,
+parser.add_argument('--batch_size', default=64, type=int,
                     help="Batch size (default: 16)"
                     )
 parser.add_argument('--num_workers', default=8, type=int,
@@ -637,12 +637,12 @@ def calcAccuracy(model, test_dataloader, idxWriter=0):
     print("final accuracy: {}".format(truePoss[0]/len(features) ))
     print("final Mean reciprocal rank: {}".format(sum(invRanks) / len(features)))
 
-    meanLetterNumbersPos = np.array(mindistPos).mean()
-    meanLetterNumbersNeg = np.array(mindistNeg).mean()
-    medianLetterNumbersPos = np.median( np.array(mindistPos))
-    medianLetterNumbersNeg = np.median(np.array(mindistNeg))
-    print(" mean letter number in positive samples from 10 closest {}".format(meanLetterNumbersPos))
-    print(" mean letter number in negative samples from 10 closest {}".format(meanLetterNumbersNeg))
+    #meanLetterNumbersPos = np.array(mindistPos).mean()
+    #meanLetterNumbersNeg = np.array(mindistNeg).mean()
+    #medianLetterNumbersPos = np.median( np.array(mindistPos))
+    #medianLetterNumbersNeg = np.median(np.array(mindistNeg))
+    #print(" mean letter number in positive samples from 10 closest {}".format(meanLetterNumbersPos))
+    #print(" mean letter number in negative samples from 10 closest {}".format(meanLetterNumbersNeg))
 
     writer.add_scalar('Train/MRR', sum(invRanks) / len(features), idxWriter)
     writer.add_scalar('Train/Accuracy', truePoss[0] / len(features), idxWriter)
@@ -767,7 +767,7 @@ def getVector(fullName, model, transform):
 
 def compare2Manus(model, transform):
     from sklearn.cluster import KMeans
-    root = '/home/olya/Documents/fragmentsData/LettersAlefTest'
+    root = '/home/olya/Documents/fragmentsData/DSS_Joins'
     first = '4Q84_bin1'
     second = '4Q111_binq'
     firstVecs = []
@@ -843,11 +843,11 @@ def compare2Manus(model, transform):
 
 
 def main():
-    TRAIN_ON_BINARY = True
+    TRAIN_ON_BINARY = False
     ADD_BINARY = False
     MNIST = False
     if not TRAIN_ON_BINARY:
-        dataroot =  r'/home/olya/Documents/fragmentsData/LettersAlef'#r'/home/olya/Documents/Data/DSS/DSS_Joins'  #r"/home/olya/Documents/fragmentsData/perManu" #args.dataroot
+        dataroot =  r'/home/olya/Documents/fragmentsData/LettersAlef'# r'/home/olya/Documents/fragmentsData/DSS_Joins'#
     else:
         dataroot = r'/home/olya/Documents/fragmentsData/DSS_Joins_bw'
     lfw_dataroot = args.lfw
@@ -923,10 +923,10 @@ def main():
     #   ToTensor() normalizes pixel values between [0, 1]
     #   Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]) normalizes pixel values between [-1, 1]
     data_transforms = transforms.Compose([
-        #transforms.Resize(size=(32,32)),
-        transforms.Lambda(myResize),
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomVerticalFlip(),
+        transforms.Resize(size=(32,32)),
+        #transforms.Lambda(myResize),
+        #transforms.RandomHorizontalFlip(),
+        #transforms.RandomVerticalFlip(),
         #transforms.Lambda(myTransform),
         transforms.ToTensor(),
         transforms.Normalize(
@@ -974,7 +974,7 @@ def main():
             )
         ])
     else:
-        tripletsPath =  "/home/olya/Documents/facenetbased-dss/datasets/training_fragment_triplets_1100000.npy" #if ADD_BINARY else "/home/olya/Documents/facenetbased-dss/datasets/training_fragment_triplets_nobin_1100000.npy"
+        tripletsPath = None# "/home/olya/Documents/facenetbased-dss/datasets/training_fragment_triplets_500000.npy" #if ADD_BINARY else "/home/olya/Documents/facenetbased-dss/datasets/training_fragment_triplets_nobin_1100000.npy"
         train_dataloader = torch.utils.data.DataLoader(
             dataset=TripletFragmentsDataset(
                 root_dir=dataroot,
@@ -1118,9 +1118,8 @@ def main():
     #calcStatus(test_dataloader)
     #testModel(model, test_dataloader)
 
-    compare2Manus(model, data_transforms_bin)
 
-    calcAccuracy(model, test_dataloader)
+    #calcAccuracy(model, test_dataloader)
 
     # Start Training loop
     print("Training using triplet loss on {} triplets starting for {} epochs:\n".format(
@@ -1140,6 +1139,7 @@ def main():
     #         epochs=epochs
     #     )
 
+    calcAccuracy(model, test_dataloader, 0)
     # Start training model using Triplet Loss
     train_triplet(
         start_epoch=start_epoch,

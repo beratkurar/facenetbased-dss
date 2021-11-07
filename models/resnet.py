@@ -169,9 +169,9 @@ class Resnet34Triplet(nn.Module):
                            Defaults to False.
     """
 
-    def __init__(self, embedding_dimension=128, pretrained=False, addSide = False):
+    def __init__(self, embedding_dimension=128, pretrained=False, addSide = False, binary = False):
         super(Resnet34Triplet, self).__init__()
-        self.model = resnet34(pretrained=pretrained)
+        self.model = resnet34(pretrained=pretrained, binary = binary)
         input_features_fc_layer = self.model.fc.in_features
         # Output embedding
         self.model.fc = nn.Linear(input_features_fc_layer, embedding_dimension)
